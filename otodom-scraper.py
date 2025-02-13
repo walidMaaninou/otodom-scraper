@@ -86,7 +86,7 @@ if st.session_state.authenticated:
                 continue
             
             soup = BeautifulSoup(response.text, "html.parser")
-            
+            title = soup.select("h3[data-cy='adPageAdTitle']")[0].get_text()
             element = soup.find("p", text="Dostępne lokale")
             
             first_number, second_number = None, None
@@ -95,10 +95,10 @@ if st.session_state.authenticated:
                 first_number, second_number = numbers if len(numbers) == 2 else (None, None)
             
             scraped_data.append([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                 full_link, first_number, second_number])
+                                 full_link, title, first_number, second_number])
             
             log_messages.append(f"📌 Scraped {index+1}/{len(links)}: {full_link}")
-            df = pd.DataFrame(scraped_data, columns=["Date of Extraction", "URL", "First Number", "Second Number"])
+            df = pd.DataFrame(scraped_data, columns=["Date of Extraction", "URL", "Title", "First Number", "Second Number"])
             progress_bar.progress((index + 1) / len(links))
             log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=log_area_height)
             dataframe.table(df)
