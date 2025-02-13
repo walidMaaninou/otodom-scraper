@@ -22,7 +22,7 @@ if not st.session_state.authenticated:
         if password_input == PASSWORD:
             st.session_state.authenticated = True
             st.success("✅ Access Granted! You can now use the scraper.")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ Incorrect Password!")
 
