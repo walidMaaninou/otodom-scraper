@@ -1,1 +1,1 @@
-BeautifulSoup==4.13.3
+bs4
