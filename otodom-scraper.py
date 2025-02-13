@@ -98,7 +98,7 @@ if st.session_state.authenticated:
                                  full_link, title, first_number, second_number])
             
             log_messages.append(f"📌 Scraped {index+1}/{len(links)}: {full_link}")
-            df = pd.DataFrame(scraped_data, columns=["Date of Extraction", "URL", "Title", "First Number", "Second Number"])
+            df = pd.DataFrame(scraped_data, columns=["Date of Extraction", "URL", "Investment name", "Remaining", "TOTAL"])
             progress_bar.progress((index + 1) / len(links))
             log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=log_area_height)
             dataframe.table(df)
