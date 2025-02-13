@@ -31,10 +31,26 @@ if st.session_state.authenticated:
     st.title("Otodom Property Scraper")
     st.write("Scraping property listings from Otodom with Requests & BeautifulSoup...")
 
-    max_pages = st.number_input("Max pages to scrape", min_value=1, max_value=50, value=1, step=1)
+    # Fetch the total number of pages dynamically
+    url_template = "https://www.otodom.pl/pl/wyniki/sprzedaz/inwestycja/mazowieckie/warszawa/warszawa/warszawa?ownerTypeSingleSelect=ALL&viewType=listing&limit=72&page=1"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
     }
+    
+    # Get the first page to extract the total number of pages
+    response = requests.get(url_template, headers=headers)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, "html.parser")
+        pagination = soup.select("ul.pagination li a")
+        total_pages = 1  # Default if no pagination found
+        if pagination:
+            total_pages = max([int(page.get_text()) for page in pagination if page.get_text().isdigit()])
+    else:
+        st.error(f"❌ Failed to retrieve page (Status: {response.status_code})")
+        total_pages = 1
+    
+    # Let the user select the maximum number of pages
+    max_pages = st.number_input("Max pages to scrape", min_value=1, max_value=total_pages, value=1, step=1)
 
     if st.button("Start Scraping"):
         progress_bar = st.progress(0)
@@ -90,7 +106,7 @@ if st.session_state.authenticated:
                 numbers = element.find_next_sibling("p").text.split(" z ")
                 first_number, second_number = numbers if len(numbers) == 2 else (None, None)
             
-            scraped_data.append([
+            scraped_data.append([ 
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 full_link,
                 first_number,
