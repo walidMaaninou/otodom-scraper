@@ -39,12 +39,15 @@ if st.session_state.authenticated:
     if st.button("Start Scraping"):
         progress_bar = st.progress(0)
         log_messages = []
-        url_template = "https://www.otodom.pl/pl/wyniki/sprzedaz/inwestycja/mazowieckie/warszawa/warszawa/warszawa?ownerTypeSingleSelect=ALL&viewType=listing&limit=72&page={}"
+        url_template = "https://www.otodom.pl/pl/wyniki/sprzedaz/inwestycja/mazowieckie/warszawa/warszawa/warszawa?ownerTypeSingleSelect=ALL&viewType=listing&limit=72&page={} "
         
         links = []
         scraped_data = []
         log_placeholder = st.empty()
         dataframe = st.empty()
+        
+        # Auto-scrolling feature: Increasing height for new logs
+        log_area_height = 300
         
         for page in range(1, max_pages + 1):
             url = url_template.format(page)
@@ -67,11 +70,12 @@ if st.session_state.authenticated:
             log_messages.append(f"✅ Scraped {len(new_links)} links from page {page}")
             progress_bar.progress(page / max_pages)
             time.sleep(1)
-            log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=300)
+            log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=log_area_height)
+            log_area_height += 20  # Increase height for auto-scrolling effect
         
         links = list(set(links))
         log_messages.append(f"🔗 Total unique property links collected: {len(links)}")
-        log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=300)
+        log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=log_area_height)
         
         for index, link in enumerate(links):
             full_link = f"https://www.otodom.pl{link}" if link.startswith("/") else link
@@ -90,17 +94,13 @@ if st.session_state.authenticated:
                 numbers = element.find_next_sibling("p").text.split(" z ")
                 first_number, second_number = numbers if len(numbers) == 2 else (None, None)
             
-            scraped_data.append([
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                full_link,
-                first_number,
-                second_number
-            ])
+            scraped_data.append([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                 full_link, first_number, second_number])
             
             log_messages.append(f"📌 Scraped {index+1}/{len(links)}: {full_link}")
             df = pd.DataFrame(scraped_data, columns=["Date of Extraction", "URL", "First Number", "Second Number"])
             progress_bar.progress((index + 1) / len(links))
-            log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=300)
+            log_placeholder.text_area("📜 Scraper Log", "\n".join(log_messages), height=log_area_height)
             dataframe.table(df)
             time.sleep(1)
         
